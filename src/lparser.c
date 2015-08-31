@@ -993,12 +993,24 @@ static void simpleexp (LexState *ls, expdesc *v) {
 }
 
 
-static UnOpr getunopr (int op) {
+static UnOpr getunopr (int op, int lookahead, LexState *ls) {
   switch (op) {
     case TK_NOT: return OPR_NOT;
-    case '-': return OPR_MINUS;
+    case '-': 
+      if(lookahead == '=')
+      {
+          luaX_next(ls);
+          return OPR_SELFSUB;
+      }
+      return OPR_MINUS;
     case '~': return OPR_BNOT;
     case '#': return OPR_LEN;
+    case '+': 
+      if(lookahead == '=') 
+      {
+        luaX_next(ls);
+        return OPR_SELFADD;
+      }
     default: return OPR_NOUNOPR;
   }
 }
@@ -1059,7 +1071,8 @@ static BinOpr subexpr (LexState *ls, expdesc *v, int limit) {
   BinOpr op;
   UnOpr uop;
   enterlevel(ls);
-  uop = getunopr(ls->t.token);
+  int ayy = luaX_lookahead(ls);
+  uop = getunopr(ls->t.token, ayy, ls);
   if (uop != OPR_NOUNOPR) {
     int line = ls->linenumber;
     luaX_next(ls);

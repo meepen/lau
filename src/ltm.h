@@ -35,6 +35,8 @@ typedef enum {
   TM_SHL,
   TM_SHR,
   TM_UNM,
+  TM_SELFADD,
+  TM_SELFSUB,
   TM_BNOT,
   TM_LT,
   TM_LE,

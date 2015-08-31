@@ -799,7 +799,7 @@ static void codeexpval (FuncState *fs, OpCode op,
   else {
     int o1, o2;
     /* move operands to registers (if needed) */
-    if (op == OP_UNM || op == OP_BNOT || op == OP_LEN) {  /* unary op? */
+    if (op == OP_UNM || op == OP_BNOT || op == OP_LEN || op == OP_SELFADD || op == OP_SELFSUB) {  /* unary op? */
       o2 = 0;  /* no second expression */
       o1 = luaK_exp2anyreg(fs, e1);  /* cannot operate on constants */
     }
@@ -842,7 +842,7 @@ void luaK_prefix (FuncState *fs, UnOpr op, expdesc *e, int line) {
   expdesc e2;
   e2.t = e2.f = NO_JUMP; e2.k = VKINT; e2.u.ival = 0;
   switch (op) {
-    case OPR_MINUS: case OPR_BNOT: case OPR_LEN: {
+    case OPR_MINUS: case OPR_BNOT: case OPR_LEN: case OPR_SELFADD: case OPR_SELFSUB: {
       codeexpval(fs, cast(OpCode, (op - OPR_MINUS) + OP_UNM), e, &e2, line);
       break;
     }
