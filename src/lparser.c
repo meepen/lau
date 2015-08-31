@@ -1392,15 +1392,18 @@ static void forstat (LexState *ls, int line) {
 }
 
 
-static void test_then_block (LexState *ls, int *escapelist) {
+static void test_then_block (LexState *ls, int *escapelist, lu_byte isnegated) {
   /* test_then_block -> [IF | ELSEIF] cond THEN block */
   BlockCnt bl;
   FuncState *fs = ls->fs;
   expdesc v;
   int jf;  /* instruction to skip 'then' code (if condition is false) */
-  luaX_next(ls);  /* skip IF or ELSEIF */
+  luaX_next(ls);  /* skip IF or ELSEIF or UNLESS */
   expr(ls, &v);  /* read condition */
-  checknext(ls, TK_THEN);
+  if(isnegated == 0)
+    checknext(ls, TK_THEN);
+  else
+    checknext(ls, TK_DO);
   if (ls->t.token == TK_GOTO || ls->t.token == TK_BREAK) {
     luaK_goiffalse(ls->fs, &v);  /* will jump to label if condition is true */
     enterblock(fs, &bl, 0);  /* must enter block before 'goto' */
@@ -1414,9 +1417,15 @@ static void test_then_block (LexState *ls, int *escapelist) {
       jf = luaK_jump(fs);
   }
   else {  /* regular case (not goto/break) */
-    luaK_goiftrue(ls->fs, &v);  /* skip over block if condition is false */
+    if(isnegated == 0)
+      luaK_goiftrue(ls->fs, &v);  /* skip over block if condition is false */
+    else
+      luaK_goiffalse(ls->fs, &v);  /* skip over block if condition is false */
     enterblock(fs, &bl, 0);
-    jf = v.f;
+    if(isnegated == 0)
+      jf = v.f;
+    else
+      jf = v.t;
   }
   statlist(ls);  /* 'then' part */
   leaveblock(fs);
@@ -1427,13 +1436,13 @@ static void test_then_block (LexState *ls, int *escapelist) {
 }
 
 
-static void ifstat (LexState *ls, int line) {
+static void ifstat (LexState *ls, int line, lu_byte isnegated) {
   /* ifstat -> IF cond THEN block {ELSEIF cond THEN block} [ELSE block] END */
   FuncState *fs = ls->fs;
   int escapelist = NO_JUMP;  /* exit list for finished parts */
-  test_then_block(ls, &escapelist);  /* IF cond THEN block */
+  test_then_block(ls, &escapelist, isnegated);  /* IF cond THEN block */
   while (ls->t.token == TK_ELSEIF)
-    test_then_block(ls, &escapelist);  /* ELSEIF cond THEN block */
+    test_then_block(ls, &escapelist, 0);  /* ELSEIF cond THEN block */
   if (testnext(ls, TK_ELSE))
     block(ls);  /* 'else' part */
   check_match(ls, TK_END, TK_IF, line);
@@ -1556,7 +1565,11 @@ static void statement (LexState *ls) {
       break;
     }
     case TK_IF: {  /* stat -> ifstat */
-      ifstat(ls, line);
+      ifstat(ls, line, 0);
+      break;
+    }
+    case TK_UNLESS: {
+      ifstat(ls, line, 1);
       break;
     }
     case TK_WHILE: {  /* stat -> whilestat */
