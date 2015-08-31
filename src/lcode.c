@@ -842,7 +842,7 @@ void luaK_prefix (FuncState *fs, UnOpr op, expdesc *e, int line) {
   expdesc e2;
   e2.t = e2.f = NO_JUMP; e2.k = VKINT; e2.u.ival = 0;
   switch (op) {
-    case OPR_MINUS: case OPR_BNOT: case OPR_LEN: case OPR_SELFADD: case OPR_SELFSUB: {
+    case OPR_MINUS: case OPR_BNOT: case OPR_LEN:  {
       codeexpval(fs, cast(OpCode, (op - OPR_MINUS) + OP_UNM), e, &e2, line);
       break;
     }
