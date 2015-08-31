@@ -799,7 +799,7 @@ static void codeexpval (FuncState *fs, OpCode op,
   else {
     int o1, o2;
     /* move operands to registers (if needed) */
-    if (op == OP_UNM || op == OP_BNOT || op == OP_LEN || op == OP_SELFADD || op == OP_SELFSUB) {  /* unary op? */
+    if (op == OP_UNM || op == OP_BNOT || op == OP_LEN) {  /* unary op? */
       o2 = 0;  /* no second expression */
       o1 = luaK_exp2anyreg(fs, e1);  /* cannot operate on constants */
     }

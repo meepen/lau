@@ -762,7 +762,6 @@ void luaV_execute (lua_State *L) {
     ra = RA(i);
     lua_assert(base == ci->u.l.base);
     lua_assert(base <= L->top && L->top < L->stack + L->stacksize);
-		printf("%08X\n", GET_OPCODE(i));
     vmdispatch (GET_OPCODE(i)) {
       vmcase(OP_MOVE) {
         setobjs2s(L, ra, RB(i));
@@ -994,36 +993,6 @@ void luaV_execute (lua_State *L) {
         }
         vmbreak;
       }
-  	  vmcase(OP_SELFADD) {
-        TValue *rb = RB(i);
-  	    lua_Number nb;
-  	    if (ttisinteger(rb)) {
-          lua_Integer ib = ivalue(rb);
-          setivalue(ra, luai_numadd(L, ib, 1));
-  	    }
-  	    else if (tonumber(rb, &nb)) {
-		  setfltvalue(ra, luai_numadd(L, nb, 1));
-  	    }
-  	    else {
-  	      Protect(luaT_trybinTM(L, rb, rb, ra, TM_SELFADD));
-  	    }
-  	    vmbreak;
-	  }
-  	  vmcase(OP_SELFSUB) {
-        TValue *rb = RB(i);
-  	    lua_Number nb;
-  	    if (ttisinteger(rb)) {
-          lua_Integer ib = ivalue(rb);
-          setivalue(ra, luai_numsub(L, ib, 1));
-  	    }
-  	    else if (tonumber(rb, &nb)) {
-		  setfltvalue(ra, luai_numsub(L, nb, 1));
-  	    }
-  	    else {
-  	      Protect(luaT_trybinTM(L, rb, rb, ra, TM_SELFSUB));
-  	    }
-  	    vmbreak;
-	  }
       vmcase(OP_BNOT) {
         TValue *rb = RB(i);
         lua_Integer ib;

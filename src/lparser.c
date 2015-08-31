@@ -290,17 +290,20 @@ static int singlevaraux (FuncState *fs, TString *n, expdesc *var, int base) {
   }
 }
 
+static void singlevarbyname(LexState *ls, TString *varname, expdesc *v) {
+    FuncState *fs = ls->fs;
+    if (singlevaraux(fs, varname, v, 1) == VVOID) {  /* global name? */
+      expdesc key;
+      singlevaraux(fs, ls->envn, v, 1);  /* get environment variable */
+      lua_assert(v->k == VLOCAL || v->k == VUPVAL);
+      codestring(ls, &key, varname);  /* key is variable name */
+      luaK_indexed(fs, v, &key);  /* env[varname] */
+    }
+}
 
 static void singlevar (LexState *ls, expdesc *var) {
   TString *varname = str_checkname(ls);
-  FuncState *fs = ls->fs;
-  if (singlevaraux(fs, varname, var, 1) == VVOID) {  /* global name? */
-    expdesc key;
-    singlevaraux(fs, ls->envn, var, 1);  /* get environment variable */
-    lua_assert(var->k == VLOCAL || var->k == VUPVAL);
-    codestring(ls, &key, varname);  /* key is variable name */
-    luaK_indexed(fs, var, &key);  /* env[varname] */
-  }
+  singlevarbyname(ls, varname, var);
 }
 
 
@@ -996,21 +999,9 @@ static void simpleexp (LexState *ls, expdesc *v) {
 static UnOpr getunopr (int op, int lookahead, LexState *ls) {
   switch (op) {
     case TK_NOT: return OPR_NOT;
-    case '-': 
-      if(lookahead == '=')
-      {
-          luaX_next(ls);
-          return OPR_SELFSUB;
-      }
-      return OPR_MINUS;
+    case '-': return OPR_MINUS;
     case '~': return OPR_BNOT;
     case '#': return OPR_LEN;
-    case '+': 
-      if(lookahead == '=') 
-      {
-        luaX_next(ls);
-        return OPR_SELFADD;
-      }
     default: return OPR_NOUNOPR;
   }
 }
@@ -1071,8 +1062,7 @@ static BinOpr subexpr (LexState *ls, expdesc *v, int limit) {
   BinOpr op;
   UnOpr uop;
   enterlevel(ls);
-  int ayy = luaX_lookahead(ls);
-  uop = getunopr(ls->t.token, ayy, ls);
+  uop = getunopr(ls->t.token, luaX_lookahead(ls), ls);
   if (uop != OPR_NOUNOPR) {
     int line = ls->linenumber;
     luaX_next(ls);
@@ -1167,6 +1157,8 @@ static void check_conflict (LexState *ls, struct LHS_assign *lh, expdesc *v) {
 }
 
 
+void keychange(LexState *ls, OpCode op, expdesc *key, expdesc *v2, expdesc *v);
+
 static void assignment (LexState *ls, struct LHS_assign *lh, int nvars) {
   expdesc e;
   check_condition(ls, vkisvar(lh->v.k), "syntax error");
@@ -1182,6 +1174,31 @@ static void assignment (LexState *ls, struct LHS_assign *lh, int nvars) {
   }
   else {  /* assignment -> '=' explist */
     int nexps;
+    if(nvars == 1 && ls->t.token != '=')
+    {
+      
+      BinOpr op = getbinopr(ls->t.token);
+      
+      if(op != OPR_BXOR && op != OPR_NOBINOPR)
+      {
+          // hope for the best! CODES INCOMING
+          check_condition(ls, vkisvar(lh->v.k), "syntax error");
+          
+          luaX_next(ls);
+          checknext(ls, '=');
+          
+          nexps = explist(ls, &e);
+          
+          check_condition(ls, nexps == 1, "syntax error");
+          
+          expdesc copy; 
+          memcpy(&copy, &lh->v, sizeof(copy));
+          
+          keychange(ls, cast(OpCode, (op - OPR_ADD) + OP_ADD), &lh->v, &copy, &e);
+          return;
+      }
+      
+    }
     checknext(ls, '=');
     nexps = explist(ls, &e);
     if (nexps != nvars) {
@@ -1525,7 +1542,8 @@ static void exprstat (LexState *ls) {
   FuncState *fs = ls->fs;
   struct LHS_assign v;
   suffixedexp(ls, &v.v);
-  if (ls->t.token == '=' || ls->t.token == ',') { /* stat -> assignment ? */
+  BinOpr op = getbinopr(ls->t.token);
+  if (ls->t.token == '=' || ls->t.token == ',' || (op != OPR_BXOR && op != OPR_NOBINOPR)) { /* stat -> assignment ? */
     v.prev = NULL;
     assignment(ls, &v, 1);
   }
@@ -1568,6 +1586,45 @@ static void retstat (LexState *ls) {
   testnext(ls, ';');  /* skip optional semicolon */
 }
 
+void keychange(LexState *ls, OpCode op, expdesc *key, expdesc *v2, expdesc *v)
+{
+    
+    FuncState *fs = ls->fs;
+
+    int r = fs->freereg;
+    luaK_exp2nextreg(fs, v);
+    int r2 = fs->freereg;
+    luaK_exp2nextreg(fs, v2);
+
+    luaK_codeABC(fs, op, r2, r2, r);
+
+
+    luaK_storevar(fs, key, v2);
+
+    fs->freereg = r;
+    
+}
+
+void keychangei(LexState *ls, OpCode op, lua_Integer val)
+{
+
+    luaX_next(ls); // skip keyword
+
+
+    expdesc v2;
+    TString *varname = str_checkname(ls);
+    singlevarbyname(ls, varname, &v2);
+
+    expdesc v;
+    init_exp(&v, VKINT, 0);
+    v.u.ival = val;
+    
+    expdesc key; 
+    singlevarbyname(ls, varname, &key);
+    
+    keychange(ls, op, &key, &v2, &v);
+    
+}
 
 static void statement (LexState *ls) {
   int line = ls->linenumber;  /* may be needed for error messages */
@@ -1580,6 +1637,14 @@ static void statement (LexState *ls) {
     case TK_IF: {  /* stat -> ifstat */
       ifstat(ls, line, 0);
       break;
+    }
+    case TK_ASCEND: {
+      keychangei(ls, OP_ADD, 1);
+      break;
+    }
+    case TK_DESCEND: {
+        keychangei(ls, OP_SUB, 1);
+        break;
     }
     case TK_UNLESS: {
       ifstat(ls, line, 1);
