@@ -1034,6 +1034,21 @@ static BinOpr getbinopr (int op) {
   }
 }
 
+static int isbinassignment(int op)
+{
+    
+    switch(op)
+    {
+        
+        case '+': case '-': case '*': case '%': case '^': case '/': case TK_IDIV:
+        case '&': case '|': case TK_SHL: case TK_SHR: case TK_CONCAT:
+            return 1;
+        default: return 0;
+        
+    }
+    
+}
+
 
 static const struct {
   lu_byte left;  /* left priority for each binary operator */
@@ -1177,10 +1192,11 @@ static void assignment (LexState *ls, struct LHS_assign *lh, int nvars) {
     if(nvars == 1 && ls->t.token != '=')
     {
       
-      BinOpr op = getbinopr(ls->t.token);
       
-      if(op != OPR_BXOR && op != OPR_NOBINOPR)
+      if(isbinassignment(ls->t.token) == 1)
       {
+          
+          BinOpr op = getbinopr(ls->t.token);
           // hope for the best! CODES INCOMING
           check_condition(ls, vkisvar(lh->v.k), "syntax error");
           
@@ -1542,8 +1558,7 @@ static void exprstat (LexState *ls) {
   FuncState *fs = ls->fs;
   struct LHS_assign v;
   suffixedexp(ls, &v.v);
-  BinOpr op = getbinopr(ls->t.token);
-  if (ls->t.token == '=' || ls->t.token == ',' || (op != OPR_BXOR && op != OPR_NOBINOPR)) { /* stat -> assignment ? */
+  if (ls->t.token == '=' || ls->t.token == ',' || isbinassignment(ls->t.token) == 1) { /* stat -> assignment ? */
     v.prev = NULL;
     assignment(ls, &v, 1);
   }
