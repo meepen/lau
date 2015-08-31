@@ -406,10 +406,9 @@ int luaV_lessequal (lua_State *L, const TValue *l, const TValue *r) {
 */
 int luaV_equalobj (lua_State *L, const TValue *t1, const TValue *t2) {
   const TValue *tm;
-  if (ttype(t1) != ttype(t2)) {  /* not the same variant? */
-	if ((ttype(t1) == LUA_TMAYBE || ttype(t2) == LUA_TMAYBE) && (ttype(t1) == LUA_TBOOLEAN || ttype(t2) == LUA_TBOOLEAN))
+  if (ttype(t1) != ttype(t2) || ttype(t1) == ttype(t2) && ttype(t1) == LUA_TMAYBE) {  /* not the same variant? */
+	if ((ttype(t1) == LUA_TMAYBE || ttype(t1) == LUA_TBOOLEAN) && (ttype(t2) == LUA_TMAYBE || ttype(t2) == LUA_TBOOLEAN))
 	{
-		printf("uhh hello :D\n");
 	  int a,b;
 	  a = ttype(t1) == LUA_TMAYBE ? (l_rand() % 2) == 0 : bvalue(t1);
 	  b = ttype(t2) == LUA_TMAYBE ? (l_rand() % 2) == 0 : bvalue(t1);
