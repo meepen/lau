@@ -134,6 +134,7 @@ typedef struct lua_TValue TValue;
 #define ttisinteger(o)		checktag((o), LUA_TNUMINT)
 #define ttisnil(o)		checktag((o), LUA_TNIL)
 #define ttisboolean(o)		checktag((o), LUA_TBOOLEAN)
+#define ttismaybe(o)		checktag((o), LUA_TMAYBE)
 #define ttislightuserdata(o)	checktag((o), LUA_TLIGHTUSERDATA)
 #define ttisstring(o)		checktype((o), LUA_TSTRING)
 #define ttisshrstring(o)	checktag((o), ctb(LUA_TSHRSTR))
@@ -207,6 +208,9 @@ typedef struct lua_TValue TValue;
 
 #define setbvalue(obj,x) \
   { TValue *io=(obj); val_(io).b=(x); settt_(io, LUA_TBOOLEAN); }
+  
+#define setmaybe(obj) \
+  { TValue *io=(obj); settt_(io, LUA_TMAYBE); }
 
 #define setgcovalue(L,obj,x) \
   { TValue *io = (obj); GCObject *i_g=(x); \

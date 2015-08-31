@@ -21,6 +21,7 @@ typedef enum {
   VNIL,
   VTRUE,
   VFALSE,
+  VMAYBE,
   VK,		/* info = index of constant in 'k' */
   VKFLT,	/* nval = numerical float value */
   VKINT,	/* nval = numerical integer value */

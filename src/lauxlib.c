@@ -764,6 +764,9 @@ LUALIB_API const char *luaL_tolstring (lua_State *L, int idx, size_t *len) {
       case LUA_TNIL:
         lua_pushliteral(L, "nil");
         break;
+      case LUA_TMAYBE:
+        lua_pushstring(L, "maybe, only l-leaf coders know");
+        break;
       default:
         lua_pushfstring(L, "%s: %p", luaL_typename(L, idx),
                                             lua_topointer(L, idx));

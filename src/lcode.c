@@ -457,6 +457,10 @@ static void discharge2reg (FuncState *fs, expdesc *e, int reg) {
       luaK_codek(fs, reg, e->u.info);
       break;
     }
+    case VMAYBE: {
+        luaK_codeABC(fs, OP_LOADMAYBE, reg, 0, 0);
+        break;
+    }
     case VKFLT: {
       luaK_codek(fs, reg, luaK_numberK(fs, e->u.nval));
       break;

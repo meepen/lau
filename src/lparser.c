@@ -925,17 +925,6 @@ static void suffixedexp (LexState *ls, expdesc *v) {
   }
 }
 
-#if !defined(l_rand)		/* { */
-#if defined(LUA_USE_POSIX)
-#define l_rand()	random()
-#define l_srand(x)	srandom(x)
-#define L_RANDMAX	2147483647	/* (2^31 - 1), following POSIX */
-#else
-#define l_rand()	rand()
-#define l_srand(x)	srand(x)
-#define L_RANDMAX	RAND_MAX
-#endif
-#endif				/* } */
 
 static void simpleexp (LexState *ls, expdesc *v) {
   /* simpleexp -> FLT | INT | STRING | NIL | TRUE | FALSE | ... |
@@ -963,12 +952,12 @@ static void simpleexp (LexState *ls, expdesc *v) {
       init_exp(v, VTRUE, 0);
       break;
     }
-    case TK_MAYBE: {
-        init_exp(v, (l_rand() % 2) == 0 ? VFALSE : VTRUE, 0);
-        break;
-    }
     case TK_FALSE: {
       init_exp(v, VFALSE, 0);
+      break;
+    }
+    case TK_MAYBE: {
+      init_exp(v, VMAYBE, 0);
       break;
     }
     case TK_DOTS: {  /* vararg */

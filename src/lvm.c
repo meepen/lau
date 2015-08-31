@@ -387,6 +387,19 @@ int luaV_lessequal (lua_State *L, const TValue *l, const TValue *r) {
 }
 
 
+#if !defined(l_rand)		/* { */
+#if defined(LUA_USE_POSIX)
+#define l_rand()	random()
+#define l_srand(x)	srandom(x)
+#define L_RANDMAX	2147483647	/* (2^31 - 1), following POSIX */
+#else
+#define l_rand()	rand()
+#define l_srand(x)	srand(x)
+#define L_RANDMAX	RAND_MAX
+#endif
+#endif				/* } */
+
+
 /*
 ** Main operation for equality of Lua values; return 't1 == t2'.
 ** L == NULL means raw equality (no metamethods)
@@ -394,8 +407,16 @@ int luaV_lessequal (lua_State *L, const TValue *l, const TValue *r) {
 int luaV_equalobj (lua_State *L, const TValue *t1, const TValue *t2) {
   const TValue *tm;
   if (ttype(t1) != ttype(t2)) {  /* not the same variant? */
+	if ((ttype(t1) == LUA_TMAYBE || ttype(t2) == LUA_TMAYBE) && (ttype(t1) == LUA_TBOOLEAN || ttype(t2) == LUA_TBOOLEAN))
+	{
+		printf("uhh hello :D\n");
+	  int a,b;
+	  a = ttype(t1) == LUA_TMAYBE ? (l_rand() % 2) == 0 : bvalue(t1);
+	  b = ttype(t2) == LUA_TMAYBE ? (l_rand() % 2) == 0 : bvalue(t1);
+	  return a == b;
+	}
     if (ttnov(t1) != ttnov(t2) || ttnov(t1) != LUA_TNUMBER)
-      return 0;  /* only numbers can be equal with different variants */
+        return 0;  /* only numbers can be equal with different variants */
     else {  /* two numbers with different variants */
       lua_Integer i1, i2;  /* compare them as integers */
       return (tointeger(t1, &i1) && tointeger(t2, &i2) && i1 == i2);
@@ -784,6 +805,11 @@ void luaV_execute (lua_State *L) {
         if (GETARG_C(i)) ci->u.l.savedpc++;  /* skip next instruction (if C) */
         vmbreak;
       }
+	  vmcase(OP_LOADMAYBE) {
+		  setmaybe(ra);
+          if (GETARG_C(i)) ci->u.l.savedpc++;  /* skip next instruction (if C) */
+		  vmbreak;
+	  }
       vmcase(OP_LOADNIL) {
         int b = GETARG_B(i);
         do {
