@@ -1031,7 +1031,11 @@ void luaV_execute (lua_State *L) {
       }
       vmcase(OP_NOT) {
         TValue *rb = RB(i);
-        int res = l_isfalse(rb);  /* next assignment may change this value */
+		int res;
+		if (ttype(rb) == LUA_TMAYBE)
+          res = (l_rand() % 2) == 0;
+		else
+          res = l_isfalse(rb);  /* next assignment may change this value */
         setbvalue(ra, res);
         vmbreak;
       }

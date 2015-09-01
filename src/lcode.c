@@ -702,10 +702,27 @@ void luaK_goiffalse (FuncState *fs, expdesc *e) {
   e->f = NO_JUMP;
 }
 
+#if !defined(l_rand)		/* { */
+#if defined(LUA_USE_POSIX)
+#define l_rand()	random()
+#define l_srand(x)	srandom(x)
+#define L_RANDMAX	2147483647	/* (2^31 - 1), following POSIX */
+#else
+#define l_rand()	rand()
+#define l_srand(x)	srand(x)
+#define L_RANDMAX	RAND_MAX
+#endif
+#endif				/* } */
 
 static void codenot (FuncState *fs, expdesc *e) {
   luaK_dischargevars(fs, e);
   switch (e->k) {
+    case VMAYBE: {
+        
+        e->k = (l_rand() % 2) == 0 ? VFALSE : VTRUE;
+        break;
+        
+    }
     case VNIL: case VFALSE: {
       e->k = VTRUE;
       break;
