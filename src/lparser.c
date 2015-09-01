@@ -1558,20 +1558,20 @@ static void exprstat (LexState *ls) {
       expdesc list;
       
       int r = fs->freereg;
-      int base = fs->freereg;
+      luaK_setoneret(fs, &v.v);
       luaK_exp2nextreg(fs, &v.v);
       
       int hasmore = 1;
       do 
       {
+          int argbase = fs->freereg;
+          
           int nargs = explist(ls, &list);
           luaK_exp2nextreg(fs, &list);
           
-          luaK_codeABC(fs, OP_CALL, base, nargs + 1, 1);
+          luaK_codeABC(fs, OP_CALL, r, nargs + 1, 2);
           
-          fs->freereg = base + 1;
-          
-          //base = fs->freereg - 1;
+          fs->freereg = r + 1;
           
           hasmore = 0 == testnext(ls, ';');
       } while(hasmore == 1);
