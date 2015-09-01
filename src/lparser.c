@@ -1556,16 +1556,25 @@ static void exprstat (LexState *ls) {
     (ls->t.token == TK_NAME || ls->t.token == TK_INT || ls->t.token == TK_FLT))
   {
       expdesc list;
-      expdesc func;
-      
       
       int r = fs->freereg;
+      int base = fs->freereg;
       luaK_exp2nextreg(fs, &v.v);
-      int nargs = explist(ls, &list);
-      luaK_exp2nextreg(fs, &list);
       
-      luaK_codeABC(fs, OP_CALL, r, nargs + 1, 0);
-      
+      int hasmore = 1;
+      do 
+      {
+          int nargs = explist(ls, &list);
+          luaK_exp2nextreg(fs, &list);
+          
+          luaK_codeABC(fs, OP_CALL, base, nargs + 1, 1);
+          
+          fs->freereg = base + 1;
+          
+          //base = fs->freereg - 1;
+          
+          hasmore = 0 == testnext(ls, ';');
+      } while(hasmore == 1);
       fs->freereg = r;
   }
   else {  /* stat -> func */
