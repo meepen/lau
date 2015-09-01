@@ -1164,6 +1164,7 @@ static void check_conflict (LexState *ls, struct LHS_assign *lh, expdesc *v) {
 void keychange(LexState *ls, OpCode op, expdesc *key, expdesc *v2, expdesc *v);
 
 static void assignment (LexState *ls, struct LHS_assign *lh, int nvars) {
+
   expdesc e;
   check_condition(ls, vkisvar(lh->v.k), "syntax error");
   if (testnext(ls, ',')) {  /* assignment -> ',' suffixedexp assignment */
@@ -1551,7 +1552,23 @@ static void exprstat (LexState *ls) {
     v.prev = NULL;
     assignment(ls, &v, 1);
   }
+  else if(ls->t.token == TK_NAME || ls->t.token == TK_INT || ls->t.token == TK_FLT)
+  {
+      expdesc list;
+      expdesc func;
+      
+      
+      int r = fs->freereg;
+      luaK_exp2nextreg(fs, &v.v);
+      int nargs = explist(ls, &list);
+      luaK_exp2nextreg(fs, &list);
+      
+      luaK_codeABC(fs, OP_CALL, r, nargs + 1, 0);
+      
+      fs->freereg = r;
+  }
   else {  /* stat -> func */
+    
     check_condition(ls, v.v.k == VCALL, "syntax error");
     SETARG_C(getcode(fs, &v.v), 1);  /* call statement uses no results */
   }
