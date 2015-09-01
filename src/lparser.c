@@ -1552,7 +1552,8 @@ static void exprstat (LexState *ls) {
     v.prev = NULL;
     assignment(ls, &v, 1);
   }
-  else if(ls->t.token == TK_NAME || ls->t.token == TK_INT || ls->t.token == TK_FLT)
+  else if((v.v.k == VVOID || v.v.k == VUPVAL || v.v.k == VLOCAL || v.v.k == VINDEXED) &&
+    (ls->t.token == TK_NAME || ls->t.token == TK_INT || ls->t.token == TK_FLT))
   {
       expdesc list;
       expdesc func;
@@ -1568,7 +1569,6 @@ static void exprstat (LexState *ls) {
       fs->freereg = r;
   }
   else {  /* stat -> func */
-    
     check_condition(ls, v.v.k == VCALL, "syntax error");
     SETARG_C(getcode(fs, &v.v), 1);  /* call statement uses no results */
   }
