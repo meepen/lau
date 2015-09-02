@@ -410,8 +410,8 @@ int luaV_equalobj (lua_State *L, const TValue *t1, const TValue *t2) {
 	if ((ttype(t1) == LUA_TMAYBE || ttype(t1) == LUA_TBOOLEAN) && (ttype(t2) == LUA_TMAYBE || ttype(t2) == LUA_TBOOLEAN))
 	{
 	  int a,b;
-	  a = ttype(t1) == LUA_TMAYBE ? (l_rand() % 2) == 0 : bvalue(t1);
-	  b = ttype(t2) == LUA_TMAYBE ? (l_rand() % 2) == 0 : bvalue(t1);
+	  a = ttype(t1) == LUA_TMAYBE ? (l_rand() % 2) : bvalue(t1);
+	  b = ttype(t2) == LUA_TMAYBE ? (l_rand() % 2) : bvalue(t2);
 	  return a == b;
 	}
     if (ttnov(t1) != ttnov(t2) || ttnov(t1) != LUA_TNUMBER)
