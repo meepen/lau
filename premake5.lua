@@ -14,7 +14,8 @@ local lua_os_commandline = {
 
 local lua_os_links = {
 
-	linux = { "dl", "readline" }
+	linux = { "dl", "readline" },
+    macos = { "readline" }
 
 }
 
