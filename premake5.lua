@@ -6,15 +6,9 @@ local LUA = {
 }
 
 
-local lua_os_commandline = {
-
-	linux = "-Wl,-E"
-
-}
-
 local lua_os_links = {
 
-	linux = { "dl", "readline" },
+    linux = { "dl", "readline" },
     macos = { "readline" }
 
 }
@@ -32,9 +26,9 @@ local lua_os_defines = {
     bsd = {
         "LUA_USE_POSIX", "LUA_USE_DLOPEN"
     },
-	solaris = {
-		"LUA_USE_POSIX", "LUA_USE_DLOPEN", "_REENTRANT"
-	}
+    solaris = {
+        "LUA_USE_POSIX", "LUA_USE_DLOPEN", "_REENTRANT"
+    }
 }
 
 solution "Lua 5.3.0"
@@ -45,11 +39,9 @@ solution "Lua 5.3.0"
 
     configurations { "Debug", "Release" }
 
-	links ( lua_os_links[ os.get() ] )
+    links ( lua_os_links[ os.get() ] )
 
-	buildoptions ( lua_os_commandline[ os.get() ] )
-
-	defines ( lua_os_defines[ os.get() ] )
+    defines ( lua_os_defines[ os.get() ] )
 
     configuration "Debug"
         flags "symbols"
