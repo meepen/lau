@@ -38,9 +38,9 @@
 
 /* ORDER RESERVED */
 static const char *const luaX_tokens [] = {
-    "and", "ascend", "descend", "break", "do", "else", "elseif",
+    "and", "ascend", "descend", "check", "break", "do", "else", "elseif",
     "end", "false", "for", "function", "goto", "if",
-    "in", "local", "nil", "not", "or", "repeat", "unless", 
+    "in", "local", "nil", "not", "or", "repeat", "unless",
     "return", "then", "true", "maybe", "until", "while",
     "//", "..", "...", "==", ">=", "<=", "~=",
     "<<", ">>", "::", "<eof>",
@@ -595,4 +595,3 @@ int luaX_lookahead (LexState *ls) {
   ls->lookahead.token = llex(ls, &ls->lookahead.seminfo);
   return ls->lookahead.token;
 }
-

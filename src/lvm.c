@@ -32,7 +32,7 @@
 
 
 /* limit for table tag-method chains (to avoid loops) */
-#define MAXTAGLOOP	2000
+#define MAXTAGLOOP    2000
 
 
 
@@ -44,7 +44,7 @@
 #if !defined(l_intfitsf)
 
 /* number of bits in the mantissa of a float */
-#define NBM		(l_mathlim(MANT_DIG))
+#define NBM        (l_mathlim(MANT_DIG))
 
 /*
 ** Check whether some integers may not fit in a float, that is, whether
@@ -54,7 +54,7 @@
 ** sizeof(integer) == 32.)
 */
 #if ((((LUA_MAXINTEGER >> (NBM / 4)) >> (NBM / 4)) >> (NBM / 4)) \
-	>> (NBM - (3 * (NBM / 4))))  >  0
+    >> (NBM - (3 * (NBM / 4))))  >  0
 
 #define l_intfitsf(i)  \
   (-((lua_Integer)1 << NBM) <= (i) && (i) <= ((lua_Integer)1 << NBM))
@@ -387,17 +387,17 @@ int luaV_lessequal (lua_State *L, const TValue *l, const TValue *r) {
 }
 
 
-#if !defined(l_rand)		/* { */
+#if !defined(l_rand)        /* { */
 #if defined(LUA_USE_POSIX)
-#define l_rand()	random()
-#define l_srand(x)	srandom(x)
-#define L_RANDMAX	2147483647	/* (2^31 - 1), following POSIX */
+#define l_rand()    random()
+#define l_srand(x)    srandom(x)
+#define L_RANDMAX    2147483647    /* (2^31 - 1), following POSIX */
 #else
-#define l_rand()	rand()
-#define l_srand(x)	srand(x)
-#define L_RANDMAX	RAND_MAX
+#define l_rand()    rand()
+#define l_srand(x)    srand(x)
+#define L_RANDMAX    RAND_MAX
 #endif
-#endif				/* } */
+#endif                /* } */
 
 
 /*
@@ -407,13 +407,13 @@ int luaV_lessequal (lua_State *L, const TValue *l, const TValue *r) {
 int luaV_equalobj (lua_State *L, const TValue *t1, const TValue *t2) {
   const TValue *tm;
   if (ttype(t1) != ttype(t2) || ttype(t1) == ttype(t2) && ttype(t1) == LUA_TMAYBE) {  /* not the same variant? */
-	if ((ttype(t1) == LUA_TMAYBE || ttype(t1) == LUA_TBOOLEAN) && (ttype(t2) == LUA_TMAYBE || ttype(t2) == LUA_TBOOLEAN))
-	{
-	  int a,b;
-	  a = ttype(t1) == LUA_TMAYBE ? (l_rand() % 2) : bvalue(t1);
-	  b = ttype(t2) == LUA_TMAYBE ? (l_rand() % 2) : bvalue(t2);
-	  return a == b;
-	}
+    if ((ttype(t1) == LUA_TMAYBE || ttype(t1) == LUA_TBOOLEAN) && (ttype(t2) == LUA_TMAYBE || ttype(t2) == LUA_TBOOLEAN))
+    {
+      int a,b;
+      a = ttype(t1) == LUA_TMAYBE ? (l_rand() % 2) : bvalue(t1);
+      b = ttype(t2) == LUA_TMAYBE ? (l_rand() % 2) : bvalue(t2);
+      return a == b;
+    }
     if (ttnov(t1) != ttnov(t2) || ttnov(t1) != LUA_TNUMBER)
         return 0;  /* only numbers can be equal with different variants */
     else {  /* two numbers with different variants */
@@ -459,9 +459,9 @@ int luaV_equalobj (lua_State *L, const TValue *t1, const TValue *t2) {
 
 /* macro used by 'luaV_concat' to ensure that element at 'o' is a string */
 #define tostring(L,o)  \
-	(ttisstring(o) || (cvt2str(o) && (luaO_tostring(L, o), 1)))
+    (ttisstring(o) || (cvt2str(o) && (luaO_tostring(L, o), 1)))
 
-#define isemptystr(o)	(ttisshrstring(o) && tsvalue(o)->shrlen == 0)
+#define isemptystr(o)    (ttisshrstring(o) && tsvalue(o)->shrlen == 0)
 
 /*
 ** Main operation for concatenation: concat 'total' values in the stack,
@@ -581,7 +581,7 @@ lua_Integer luaV_mod (lua_State *L, lua_Integer m, lua_Integer n) {
 
 
 /* number of bits in an integer */
-#define NBITS	cast_int(sizeof(lua_Integer) * CHAR_BIT)
+#define NBITS    cast_int(sizeof(lua_Integer) * CHAR_BIT)
 
 /*
 ** Shift left operation. (Shift right just negates 'y'.)
@@ -721,18 +721,18 @@ void luaV_finishOp (lua_State *L) {
 */
 
 #if !defined(luai_runtimecheck)
-#define luai_runtimecheck(L, c)		/* void */
+#define luai_runtimecheck(L, c)        /* void */
 #endif
 
 
-#define RA(i)	(base+GETARG_A(i))
+#define RA(i)    (base+GETARG_A(i))
 /* to be used after possible stack reallocation */
-#define RB(i)	check_exp(getBMode(GET_OPCODE(i)) == OpArgR, base+GETARG_B(i))
-#define RC(i)	check_exp(getCMode(GET_OPCODE(i)) == OpArgR, base+GETARG_C(i))
-#define RKB(i)	check_exp(getBMode(GET_OPCODE(i)) == OpArgK, \
-	ISK(GETARG_B(i)) ? k+INDEXK(GETARG_B(i)) : base+GETARG_B(i))
-#define RKC(i)	check_exp(getCMode(GET_OPCODE(i)) == OpArgK, \
-	ISK(GETARG_C(i)) ? k+INDEXK(GETARG_C(i)) : base+GETARG_C(i))
+#define RB(i)    check_exp(getBMode(GET_OPCODE(i)) == OpArgR, base+GETARG_B(i))
+#define RC(i)    check_exp(getCMode(GET_OPCODE(i)) == OpArgR, base+GETARG_C(i))
+#define RKB(i)    check_exp(getBMode(GET_OPCODE(i)) == OpArgK, \
+    ISK(GETARG_B(i)) ? k+INDEXK(GETARG_B(i)) : base+GETARG_B(i))
+#define RKC(i)    check_exp(getCMode(GET_OPCODE(i)) == OpArgK, \
+    ISK(GETARG_C(i)) ? k+INDEXK(GETARG_C(i)) : base+GETARG_C(i))
 #define KBx(i)  \
   (k + (GETARG_Bx(i) != 0 ? GETARG_Bx(i) - 1 : GETARG_Ax(*ci->u.l.savedpc++)))
 
@@ -744,10 +744,10 @@ void luaV_finishOp (lua_State *L) {
     ci->u.l.savedpc += GETARG_sBx(i) + e; }
 
 /* for test instructions, execute the jump instruction that follows it */
-#define donextjump(ci)	{ i = *ci->u.l.savedpc; dojump(ci, i, 1); }
+#define donextjump(ci)    { i = *ci->u.l.savedpc; dojump(ci, i, 1); }
 
 
-#define Protect(x)	{ {x;}; base = ci->u.l.base; }
+#define Protect(x)    { {x;}; base = ci->u.l.base; }
 
 #define checkGC(L,c)  \
   Protect( luaC_condGC(L,{L->top = (c);  /* limit of live values */ \
@@ -756,9 +756,9 @@ void luaV_finishOp (lua_State *L) {
            luai_threadyield(L); )
 
 
-#define vmdispatch(o)	switch(o)
-#define vmcase(l)	case l:
-#define vmbreak		break
+#define vmdispatch(o)    switch(o)
+#define vmcase(l)    case l:
+#define vmbreak        break
 
 void luaV_execute (lua_State *L) {
   CallInfo *ci = L->ci;
@@ -799,16 +799,29 @@ void luaV_execute (lua_State *L) {
         setobj2s(L, ra, rb);
         vmbreak;
       }
+      vmcase(OP_TERNARY) {
+
+        if(l_isfalse(ra))
+		{
+            setobj2s(L, ra, RC(i));
+		}
+        else
+		{
+            setobj2s(L, ra, RB(i));
+		}
+        vmbreak;
+
+      }
       vmcase(OP_LOADBOOL) {
         setbvalue(ra, GETARG_B(i));
         if (GETARG_C(i)) ci->u.l.savedpc++;  /* skip next instruction (if C) */
         vmbreak;
       }
-	  vmcase(OP_LOADMAYBE) {
-		  setmaybe(ra);
+      vmcase(OP_LOADMAYBE) {
+          setmaybe(ra);
           if (GETARG_C(i)) ci->u.l.savedpc++;  /* skip next instruction (if C) */
-		  vmbreak;
-	  }
+          vmbreak;
+      }
       vmcase(OP_LOADNIL) {
         int b = GETARG_B(i);
         do {
@@ -1031,10 +1044,10 @@ void luaV_execute (lua_State *L) {
       }
       vmcase(OP_NOT) {
         TValue *rb = RB(i);
-		int res;
-		if (ttype(rb) == LUA_TMAYBE)
+        int res;
+        if (ttype(rb) == LUA_TMAYBE)
           res = (l_rand() % 2) == 0;
-		else
+        else
           res = l_isfalse(rb);  /* next assignment may change this value */
         setbvalue(ra, res);
         vmbreak;
@@ -1300,4 +1313,3 @@ void luaV_execute (lua_State *L) {
 }
 
 /* }================================================================== */
-

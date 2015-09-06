@@ -200,6 +200,7 @@ OP_SHR,/*	A B C	R(A) := RK(B) >> RK(C)				*/
 OP_UNM,/*	A B	R(A) := -R(B)					*/
 OP_BNOT,/*	A B	R(A) := ~R(B)					*/
 OP_NOT,/*	A B	R(A) := not R(B)				*/
+OP_TERNARY,/* A B C	R(A) := R(a) ? R(b) : R(c)			*/
 OP_LEN,/*	A B	R(A) := length of R(B)				*/
 
 OP_CONCAT,/*	A B C	R(A) := R(B).. ... ..R(C)			*/
