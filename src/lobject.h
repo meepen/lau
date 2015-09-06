@@ -10,6 +10,8 @@
 
 
 #include <stdarg.h>
+#include <limits.h>
+#include <math.h>
 
 
 #include "llimits.h"
@@ -168,7 +170,19 @@ typedef struct lua_TValue TValue;
 /* a dead value may get the 'gc' field, but cannot access its contents */
 #define deadvalue(o) check_exp(ttisdeadkey(o), cast(void *, val_(o).gc))
 
-#define l_isfalse(o) (ttisnil(o) || (ttisboolean(o) && bvalue(o) == 0))
+#if !defined(l_rand)                /* { */
+#if defined(LUA_USE_POSIX)
+#define l_rand() random()
+#define l_srand(x) srandom(x)
+#define L_RANDMAX 2147483647        /* (2^31 - 1), following POSIX */
+#else
+#define l_rand() rand()
+#define l_srand(x) srand(x)
+#define L_RANDMAX RAND_MAX
+#endif
+#endif
+
+#define l_isfalse(o) (ttisnil(o) || (ttisboolean(o) && bvalue(o) == 0) || (ttismaybe(o) && (l_rand() % 2) == 0))
 
 
 #define iscollectable(o) (rttype(o) & BIT_ISCOLLECTABLE)
