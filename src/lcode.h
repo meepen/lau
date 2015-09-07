@@ -48,16 +48,61 @@ typedef enum UnOpr { OPR_MINUS, OPR_BNOT, OPR_NOT, OPR_TERNARY, OPR_LEN, OPR_NOU
 
 #define luaK_jumpto(fs,t) luaK_patchlist(fs, luaK_jump(fs), t)
 
+//
+// luaK_codeABx
+//// inserts OpCode o into the FuncState buffer with args A Bx
+//
 LUAI_FUNC int luaK_codeABx (FuncState *fs, OpCode o, int A, unsigned int Bx);
+
+//
+// luaK_codeABC
+//// inserts OpCode o into the FuncState buffer with args A B C
+//
 LUAI_FUNC int luaK_codeABC (FuncState *fs, OpCode o, int A, int B, int C);
+
 LUAI_FUNC int luaK_codek (FuncState *fs, int reg, int k);
 LUAI_FUNC void luaK_fixline (FuncState *fs, int line);
+
+//
+// luaK_nil
+//// modifies stack indices from to n to be type nil
+//
 LUAI_FUNC void luaK_nil (FuncState *fs, int from, int n);
+
+//
+// luaK_reserveregs
+//// Reserves registry indices
+//
 LUAI_FUNC void luaK_reserveregs (FuncState *fs, int n);
+
+//
+// luaK_checkstack
+//// Checks that the stack will not overflow, and sets max stack if needed
+//
 LUAI_FUNC void luaK_checkstack (FuncState *fs, int n);
+
+//
+// luaK_stringK
+//// Pushes constant string s onto the stack
+//
 LUAI_FUNC int luaK_stringK (FuncState *fs, TString *s);
+
+//
+// luaK_intK
+//// Pushes constant int n onto the FuncState stack
+//
 LUAI_FUNC int luaK_intK (FuncState *fs, lua_Integer n);
+
+//
+// luaK_dischargevars
+//// Marks an index on the stack as relocatable
+//
 LUAI_FUNC void luaK_dischargevars (FuncState *fs, expdesc *e);
+
+//
+// luaK_exp2anyreg
+//// Moves an expression to a registry index
+//
 LUAI_FUNC int luaK_exp2anyreg (FuncState *fs, expdesc *e);
 LUAI_FUNC void luaK_exp2anyregup (FuncState *fs, expdesc *e);
 LUAI_FUNC void luaK_exp2nextreg (FuncState *fs, expdesc *e);
