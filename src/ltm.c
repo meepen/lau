@@ -27,7 +27,7 @@
 static const char udatatypename[] = "userdata";
 
 LUAI_DDEF const char *const luaT_typenames_[LUA_TOTALTAGS] = {
-    "no value",
+    "null",
     "nil", "boolean", udatatypename, "number",
     "string", "table", "function", udatatypename, "thread",
     "maybe",
