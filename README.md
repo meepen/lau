@@ -3,6 +3,8 @@ glua
 glua
 
 
-DEPENDENCIES
+Dependencies
 ===
-Linux: readline
+Linux: 
+
+- readline
