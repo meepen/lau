@@ -7,4 +7,5 @@ Dependencies
 ===
 Linux: 
 
+- GNU
 - readline
