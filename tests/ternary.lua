@@ -23,7 +23,7 @@ if((check false or true then b else a) ~= b) then
 end
 
 if((check false or true then check true or false then c else b else a) ~= c) then
-    return false, "(check false or true then check true or false then c or b else a) ~= c";
+    return false, "(check false or true then check true or false then c else b else a) ~= c";
 end
 
 return true;

@@ -798,6 +798,57 @@ static void body (LexState *ls, expdesc *e, int ismethod, int line) {
         close_func(ls);
 }
 
+static void anon (LexState *ls, expdesc *e)
+{
+
+    FuncState new_fs;
+    BlockCnt bl;
+    new_fs.f = addprototype(ls);
+    new_fs.f->linedefined = ls->linenumber;
+    open_func(ls, &new_fs, &bl);
+
+    // parlist
+    int nparams = 0;
+    new_fs.f->is_vararg = 0;
+
+    adjustlocalvars(ls, nparams);
+    new_fs.f->numparams = cast_byte(new_fs.nactvar);
+    luaK_reserveregs(&new_fs, new_fs.nactvar);
+
+    // statlist
+    enterlevel(ls);
+
+    // return
+
+    enterlevel(ls);
+
+
+    expdesc retval;
+    expr(ls, &retval);
+
+    int first = luaK_exp2anyreg(&new_fs, &retval);
+
+    luaK_ret(&new_fs, first, 1);
+
+
+    lua_assert(ls->fs->f->maxstacksize >= ls->fs->freereg && ls->fs->freereg >= ls->fs->nactvar);
+    ls->fs->freereg = ls->fs->nactvar;    /* free registers */
+    leavelevel(ls);
+
+    // end statlist
+    lua_assert(ls->fs->f->maxstacksize >= ls->fs->freereg && ls->fs->freereg >= ls->fs->nactvar);
+    ls->fs->freereg = ls->fs->nactvar;    /* free registers */
+    leavelevel(ls);
+
+    // end function
+
+    new_fs.f->lastlinedefined = ls->linenumber;
+
+    codeclosure(ls, e);
+    close_func(ls);
+
+}
+
 
 static int explist (LexState *ls, expdesc *v) {
         /* explist -> expr { ',' expr } */
@@ -1074,33 +1125,28 @@ static BinOpr subexpr (LexState *ls, expdesc *v, int limit) {
         {
 
 
-                luaX_next(ls); // skip TK_TERNARY
+            luaX_next(ls); // skip TK_TERNARY
 
-                expr(ls, v);
+            expr(ls, v);
 
-                checknext(ls, TK_THEN);
+            luaK_exp2nextreg(ls->fs, v);
+            int what0 = ls->fs->freereg - 1;
 
-                expdesc v1;
-                expr(ls, &v1);
+            checknext(ls, TK_THEN);
 
-                checknext(ls, TK_ELSE);
+            expdesc v1;
+            anon(ls, &v1);
+            int what1 = ls->fs->freereg - 1;
 
-                expdesc v2;
-                expr(ls, &v2);
+            checknext(ls, TK_ELSE);
 
-                luaK_exp2nextreg(ls->fs, v);
-                int what0 = ls->fs->freereg - 1;
+            expdesc v2;
+            anon(ls, &v2);
+            int what2 = ls->fs->freereg - 1;
 
-                luaK_exp2nextreg(ls->fs, &v1);
-                int what1 = ls->fs->freereg - 1;
+            luaK_codeABC(ls->fs, OP_TERNARY, what0, what1, what2);
 
-                luaK_exp2nextreg(ls->fs, &v2);
-                int what2 = ls->fs->freereg - 1;
-
-
-                luaK_codeABC(ls->fs, OP_TERNARY, what0, what1, what2);
-
-                ls->fs->freereg = what0 + 1;
+            luaK_codeABC(ls->fs, OP_CALL, what0, 0, 2);
 
         }
         else if (uop != OPR_NOUNOPR) {
