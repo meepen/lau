@@ -785,13 +785,13 @@ void luaV_execute (lua_State *L) {
             vmcase(OP_TERNARY) {
 
                 if(l_isfalse(ra))
-		{
-                        setobj2s(L, ra, RC(i));
-		}
+                {
+                    setobj2s(L, ra, RC(i));
+                }
                 else
-		{
-                        setobj2s(L, ra, RB(i));
-		}
+                {
+                    setobj2s(L, ra, RB(i));
+                }
                 vmbreak;
 
             }

@@ -55,6 +55,10 @@ i ^= 2;
 if(i ~= 0xF00 ^ 2) then return false, expect("^=", 0xF00 ^ 2); end
 
 
+i += (function() return 2 end)();
+
+if(i ~= 0xF00 ^ 2 + 2) then return false, expect("+=", 0xF00 ^ 2 + 2); end
+
 
 i = "c";
 

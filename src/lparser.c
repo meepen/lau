@@ -266,44 +266,44 @@ static void markupval (FuncState *fs, int level) {
         upvalue into all intermediate functions.
 */
 static int singlevaraux (FuncState *fs, TString *n, expdesc *var, int base) {
-        if (fs == NULL)    /* no more levels? */
-                return VVOID;    /* default is global */
-        else {
-                int v = searchvar(fs, n);    /* look up locals at current level */
-                if (v >= 0) {    /* found? */
-                        init_exp(var, VLOCAL, v);    /* variable is local */
-                        if (!base)
-                                markupval(fs, v);    /* local will be used as an upval */
-                        return VLOCAL;
-                }
-                else {    /* not found as local at current level; try upvalues */
-                        int idx = searchupvalue(fs, n);    /* try existing upvalues */
-                        if (idx < 0) {    /* not found? */
-                                if (singlevaraux(fs->prev, n, var, 0) == VVOID) /* try upper levels */
-                                        return VVOID;    /* not found; is a global */
-                                /* else was LOCAL or UPVAL */
-                                idx    = newupvalue(fs, n, var);    /* will be a new upvalue */
-                        }
-                        init_exp(var, VUPVAL, idx);
-                        return VUPVAL;
-                }
+    if (fs == NULL)    /* no more levels? */
+        return VVOID;    /* default is global */
+    else {
+        int v = searchvar(fs, n);    /* look up locals at current level */
+        if (v >= 0) {    /* found? */
+            init_exp(var, VLOCAL, v);    /* variable is local */
+            if (!base)
+                markupval(fs, v);    /* local will be used as an upval */
+            return VLOCAL;
         }
+        else {    /* not found as local at current level; try upvalues */
+            int idx = searchupvalue(fs, n);    /* try existing upvalues */
+            if (idx < 0) {    /* not found? */
+                if (singlevaraux(fs->prev, n, var, 0) == VVOID) /* try upper levels */
+                    return VVOID;    /* not found; is a global */
+                /* else was LOCAL or UPVAL */
+                idx    = newupvalue(fs, n, var);    /* will be a new upvalue */
+            }
+            init_exp(var, VUPVAL, idx);
+            return VUPVAL;
+        }
+    }
 }
 
 static void singlevarbyname(LexState *ls, TString *varname, expdesc *v) {
-                FuncState *fs = ls->fs;
-                if (singlevaraux(fs, varname, v, 1) == VVOID) {    /* global name? */
-                        expdesc key;
-                        singlevaraux(fs, ls->envn, v, 1);    /* get environment variable */
-                        lua_assert(v->k == VLOCAL || v->k == VUPVAL);
-                        codestring(ls, &key, varname);    /* key is variable name */
-                        luaK_indexed(fs, v, &key);    /* env[varname] */
-                }
+    FuncState *fs = ls->fs;
+    if (singlevaraux(fs, varname, v, 1) == VVOID) {    /* global name? */
+        expdesc key;
+        singlevaraux(fs, ls->envn, v, 1);    /* get environment variable */
+        lua_assert(v->k == VLOCAL || v->k == VUPVAL);
+        codestring(ls, &key, varname);    /* key is variable name */
+        luaK_indexed(fs, v, &key);    /* env[varname] */
+    }
 }
 
 static void singlevar (LexState *ls, expdesc *var) {
-        TString *varname = str_checkname(ls);
-        singlevarbyname(ls, varname, var);
+    TString *varname = str_checkname(ls);
+    singlevarbyname(ls, varname, var);
 }
 
 
@@ -887,7 +887,6 @@ static void primaryexp (LexState *ls, expdesc *v) {
         }
 }
 
-
 static void suffixedexp (LexState *ls, expdesc *v) {
         /* suffixedexp ->
                          primaryexp { '.' NAME | '[' exp ']' | ':' NAME funcargs | funcargs } */
@@ -924,6 +923,8 @@ static void suffixedexp (LexState *ls, expdesc *v) {
                 }
         }
 }
+
+
 
 
 static void simpleexp (LexState *ls, expdesc *v) {
@@ -1087,19 +1088,19 @@ static BinOpr subexpr (LexState *ls, expdesc *v, int limit) {
                 expdesc v2;
                 expr(ls, &v2);
 
+                luaK_exp2nextreg(ls->fs, v);
+                int what0 = ls->fs->freereg - 1;
 
-                int what1 = ls->fs->freereg;
-                luaK_exp2anyreg(ls->fs, &v1);
+                luaK_exp2nextreg(ls->fs, &v1);
+                int what1 = ls->fs->freereg - 1;
 
-                int what2 = ls->fs->freereg;
-                luaK_exp2anyreg(ls->fs, &v2);
+                luaK_exp2nextreg(ls->fs, &v2);
+                int what2 = ls->fs->freereg - 1;
 
-                int what0 = ls->fs->freereg;
-                luaK_exp2anyreg(ls->fs, v);
 
                 luaK_codeABC(ls->fs, OP_TERNARY, what0, what1, what2);
 
-                init_exp(v, VNONRELOC, what0);
+                ls->fs->freereg = what0 + 1;
 
         }
         else if (uop != OPR_NOUNOPR) {
@@ -1228,9 +1229,7 @@ static void assignment (LexState *ls, struct LHS_assign *lh, int nvars) {
                 luaX_next(ls);
                 checknext(ls, '=');
 
-                nexps = explist(ls, &e);
-
-                check_condition(ls, nexps == 1, "syntax error");
+                expr(ls, &e);
 
                 expdesc copy;
                 memcpy(&copy, &lh->v, sizeof(copy));
@@ -1659,14 +1658,15 @@ void keychange(LexState *ls, OpCode op, expdesc *key, expdesc *v2, expdesc *v)
 
     FuncState *fs = ls->fs;
 
-    int r = fs->freereg;
 
     if(op == OP_CONCAT)
     {
         luaK_exp2nextreg(fs, v2);
 
-        int top = fs->freereg;
+        int r = fs->freereg - 1;
+
         luaK_exp2nextreg(fs, v);
+        int top = fs->freereg - 1;
 
         luaK_codeABC(fs, op, r, r, top);
 
@@ -1679,12 +1679,15 @@ void keychange(LexState *ls, OpCode op, expdesc *key, expdesc *v2, expdesc *v)
     }
 
     luaK_exp2nextreg(fs, v);
-    int r2 = fs->freereg;
+    int r = fs->freereg - 1;
     luaK_exp2nextreg(fs, v2);
+    int r2 = fs->freereg - 1;
 
-    luaK_codeABC(fs, op, r2, r2, r);
+    expdesc temp;
 
-    luaK_storevar(fs, key, v2);
+    init_exp(&temp, VRELOCABLE, luaK_codeABC(fs, op, r2, r2, r));
+
+    luaK_storevar(fs, key, &temp);
 
     fs->freereg = r;
 
