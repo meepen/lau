@@ -1,8 +1,11 @@
-glua
+lau
 ===
-glua
+lau
 
 
-DEPENDENCIES
+Dependencies
 ===
-Linux: readline
+Linux: 
+
+- GNU
+- readline
