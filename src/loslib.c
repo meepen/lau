@@ -15,12 +15,21 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <sys/time.h>
 
 #include "lua.h"
 
 #include "lauxlib.h"
 #include "lualib.h"
 
+
+#ifndef UINT
+#define UINT unsigned int
+#endif
+
+const UINT SEC  = 	2;
+const UINT MSEC = 	4;
+const UINT USEC = 	8;
 
 /*
 ** {==================================================================
@@ -337,6 +346,25 @@ static int os_exit (lua_State *L) {
 }
 
 
+/* time helper function */
+double get_time( UINT k ){
+
+	struct timeval tv;
+	gettimeofday( &tv, NULL );
+
+	if( k==SEC ) 		return tv.tv_sec;
+	else if( k==MSEC )	return (tv.tv_sec + (double)((int)(tv.tv_usec*0.001) * 0.001));
+	else if( k==USEC )	return (tv.tv_usec*0.000001);
+	else 				return 0;
+}
+
+static int os_millitime (lua_State *L) {
+
+	lua_pushnumber(L, get_time( MSEC ) );
+	return 1;
+}
+
+
 static const luaL_Reg syslib[] = {
     {"clock",         os_clock},
     {"date",            os_date},
@@ -349,6 +377,7 @@ static const luaL_Reg syslib[] = {
     {"setlocale", os_setlocale},
     {"time",            os_time},
     {"tmpname",     os_tmpname},
+    {"millitime",   os_millitime},
     {NULL, NULL}
 };
 
